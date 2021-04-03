@@ -12,7 +12,7 @@
 # don't modify this imports.
 import socket
 import pickle
-from clienthelper import ClientHelper
+from client_helper import ClientHelper
 
 ######################################## Client Socket ###############################################################3
 """
@@ -27,9 +27,12 @@ class Client(object):
         Class constructor
         """
         self.client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        self.id = 0
+        self.server_ip = None
+        self.server_port = 0
+        self.client_id = 0
+        self.client_name = None
 
-    def connect(self, server_ip_address, server_port):
+    def connect(self):
         """
         TODO: Create a connection from client to server
               Note that this method must handle any exceptions
@@ -37,7 +40,23 @@ class Client(object):
         :server_port: the port of the server
         """
         try:
-            self.client.connect((server_ip_address, server_port))
+            # get server info
+            self.server_ip = input("Enter the server IP Address: ")
+            self.server_port = int(input("Enter the server port: "))
+            # get client name
+            self.client_name = input("Enter a username: ")
+            # connect
+            self.client.connect((self.server_ip, self.server_port))
+            # set client id
+            recv_data = self.receive()
+            self.client_id = recv_data['client_id']
+            # send client info
+            send_data = {'client_name': self.client_name, 'client_id': self.client_id}
+            self.send(send_data)
+
+            # print success info
+            print("Successfully connected to server: " + self.server_ip + "/" + str(self.server_port))
+
         except ConnectionError as connectionError:
             print('ConnectionError:', connectionError)
             exit(1)
@@ -70,11 +89,11 @@ class Client(object):
         data = self.client.recv(max_alloc_buffer)
         return pickle.loads(data)
 
-    def client_helper(self, server_ip, server_port):
+    def client_helper(self):
         """
         TODO: create an object of the client helper and start it.
         """
-        client_helper = ClientHelper(self, server_ip, server_port)
+        client_helper = ClientHelper(self)
         client_helper.start()
 
     def close(self):
@@ -84,14 +103,18 @@ class Client(object):
         """
         self.client.close()
 
+    def get_client_name(self):
+        return self.client_name
+
+    def get_client_id(self):
+        return self.client_id
+
 
 # main code to run client
 if __name__ == '__main__':
-    server_ip = '127.0.0.1'
-    server_port = 12000
     client = Client()
-    client.connect(server_ip, server_port)  # creates a connection with the server
-    client.client_helper(server_ip, server_port)
+    client.connect()  # creates a connection with the server
+    client.client_helper()
 
     while True:
         raw_data = client.receive()

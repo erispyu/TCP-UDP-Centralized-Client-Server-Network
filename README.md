@@ -33,6 +33,7 @@ This project template consist in two folders (Client and Server).
         2. clienthandler.py -- implement this file based on the functionality needed for this project
         3. menu.py -- implement the methods marked as TODO
         
+
    ***IMPORTANT: if needed, you can add more files to this project as its implementation progresses. However,
    you are not allowed to modify the code from client.py and server.py once you copied and pasted it from
    the labs. The only values students are allowed to modify in server.py are the IP address and port of the server***
@@ -143,14 +144,14 @@ Your option <enter a number>:
 Next, all the options from the menu are explained in detail with output examples.
 
 #### Option 1: Get Users List
-   
+
 When users select this option the client helper sends a request to the server asking for a list of all the users connected to it.
 The server sends that list, and the info from those users are shown in the client console. The info from the users connected
 must be shown in the following format <username:client_id>. Note that users that were connected to the server at
 some point, but are not connected at the time of the request is made, must not be in that list.
 
 Here is an example of the output needed for option #1
-  
+
 ```
 Your option <enter a number>: 1
 
@@ -158,7 +159,7 @@ Users connected: 4
 Jose:2345, Nina:8763, Alice:1234, Bob:4566
 ```
 
-  
+
 #### Option 2: Send a message
 
 When this option is selected by the user, the client helper sends a request to the server containing the option selected,
@@ -465,7 +466,7 @@ Alice    |   15    |    0    |     30       |     11      |
 Jortizco |   10    |    30   |     0        |     25      |
 Bob      |   -     |    11   |     25       |     0       |
 ```
- 
+
 #### Option 10: Get the Routing Table of this client with Link State Protocol
 
 In this option the client will request its routing table to the server using itself as the source node. Then the 
@@ -591,10 +592,10 @@ When in the main menu the user selects option 12 from the main menu, then the fo
 ```
 
 ### Option 1: Turn web caching On. 
-  
+
 Once this option is selected, the user should be informed that the web caching option is on. Note how the next time the 
 menu is loaded when this option is active, the option has changed to "turn web caching Off". 
-  
+
 ```
 Your option <enter a number>: 1
 Web caching is on

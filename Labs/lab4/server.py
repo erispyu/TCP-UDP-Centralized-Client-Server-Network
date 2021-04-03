@@ -59,7 +59,7 @@ class Server(object):
     def _handler(self, clienthandler, addr):
         """
         TODO: create an object of the ClientHandler.
-              see the clienthandler.py file to see
+              see the client_handler.py file to see
               the parameters that must be passed into
               the ClientHandler's constructor to create
               the object.

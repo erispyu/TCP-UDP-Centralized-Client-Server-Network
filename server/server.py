@@ -1,7 +1,8 @@
 # don't modify this imports.
 import socket
+import pickle
 from threading import Thread
-from clienthandler import ClientHandler
+from client_handler import ClientHandler
 
 
 class Server(object):
@@ -20,7 +21,7 @@ class Server(object):
         """
         self.host = host
         self.port = port
-        self.serversocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)  # your implementation for this socket here
+        self.server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)  # your implementation for this socket here
         self.handlers = {}  # initializes client_handlers list
 
     def _bind(self):
@@ -28,7 +29,7 @@ class Server(object):
         TODO: copy and paste your implementation from lab 3
         :return: VOID
         """
-        self.serversocket.bind((self.host, self.port))
+        self.server_socket.bind((self.host, self.port))
 
     def _listen(self):
         """
@@ -37,10 +38,11 @@ class Server(object):
         """
         try:
             self._bind()
-            self.serversocket.listen(self.MAX_NUM_CONN)
+            self.server_socket.listen(self.MAX_NUM_CONN)
             print("Listening at " + str(self.host) + "/" + str(self.port))
         except:
-            self.serversocket.close()
+            print("ERROR: server could not listen at " + str(self.host) + "/" + str(self.port))
+            self.server_socket.close()
 
     def _accept_clients(self):
         """
@@ -51,15 +53,17 @@ class Server(object):
         """
         while True:
             try:
-                clienthandler, addr = self.serversocket.accept()
-                Thread(target=self._handler, args=(clienthandler, addr)).start()  # client thread started
+                client_socket, addr = self.server_socket.accept()
+                Thread(target=self._handler, args=(client_socket, addr), daemon=True).start()  # client thread started
             except:
-                print("ERROR occurred 1")
+                # print("ERROR occurred 1")
+                # self.server_socket.close()
+                continue
 
-    def _handler(self, clienthandler, addr):
+    def _handler(self, client_socket, addr):
         """
         TODO: create an object of the ClientHandler.
-              see the clienthandler.py file to see
+              see the client_handler.py file to see
               the parameters that must be passed into
               the ClientHandler's constructor to create
               the object.
@@ -69,10 +73,18 @@ class Server(object):
         :clienthandler: the clienthandler child process that the server creates when a client is accepted
         :addr: the addr list of server parameters created by the server when a client is accepted.
         """
-        clienthandler = ClientHandler(self, clienthandler, addr)
         client_id = addr[1]
-        clienthandler.run()
-        self.handlers[client_id] = clienthandler
+
+        # send client_id to the client
+        client_id_data = {'client_id': client_id}
+        client_socket.send(pickle.dumps(client_id_data))
+
+        client_handler = ClientHandler(self, client_socket, addr)
+        self.handlers[client_id] = client_handler
+        client_handler.run()
+
+    def get_client_list(self):
+        return self.handlers
 
     def run(self):
         """
