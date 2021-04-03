@@ -26,7 +26,7 @@ class Client(object):
         """
         Class constructor
         """
-        self.client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        self.client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.server_ip = None
         self.server_port = 0
         self.client_id = 0
@@ -46,7 +46,7 @@ class Client(object):
             # get client name
             self.client_name = input("Enter a username: ")
             # connect
-            self.client.connect((self.server_ip, self.server_port))
+            self.client_socket.connect((self.server_ip, self.server_port))
             # set client id
             recv_data = self.receive()
             self.client_id = recv_data['client_id']
@@ -69,7 +69,7 @@ class Client(object):
         :client_ip: the client ip to bind, if left to '' then the client will bind to the local ip address of the machine
         :client_port: the client port to bind.
         """
-        self.client.bind((client_ip, client_port))
+        self.client_socket.bind((client_ip, client_port))
 
     def send(self, data):
         """
@@ -78,7 +78,7 @@ class Client(object):
         :return: VOID
         """
         data = pickle.dumps(data)
-        self.client.send(data)
+        self.client_socket.send(data)
 
     def receive(self, max_alloc_buffer=4090):
         """
@@ -86,7 +86,7 @@ class Client(object):
         :param max_alloc_buffer: Max allowed allocated memory for this data
         :return: the deserialized data.
         """
-        data = self.client.recv(max_alloc_buffer)
+        data = self.client_socket.recv(max_alloc_buffer)
         return pickle.loads(data)
 
     def client_helper(self):
@@ -94,14 +94,14 @@ class Client(object):
         TODO: create an object of the client helper and start it.
         """
         client_helper = ClientHelper(self)
-        client_helper.start()
+        client_helper.run()
 
     def close(self):
         """
         TODO: close this client
         :return: VOID
         """
-        self.client.close()
+        self.client_socket.close()
 
     def get_client_name(self):
         return self.client_name

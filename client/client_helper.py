@@ -3,13 +3,29 @@ class ClientHelper:
 
     def __init__(self, client):
         self.client = client
+        self.menu = None
 
     # TODO: Implement your ClientHelper for this project
     def print_client_info(self):
-        print("Your client info is: \n")
-        print("Client Name: " + self.client.get_client_name() + "\n")
-        print("Client ID: " + str(self.client.get_client_id()) + "\n")
+        print("Your client info is: ")
+        print("Client Name: " + self.client.get_client_name())
+        print("Client ID: " + str(self.client.get_client_id()))
 
-    def start(self):
+    def cache_menu(self):
+        recv_data = self.client.receive()
+        self.menu = recv_data["menu"]
+        return
+
+    def send_option(self):
+        option = int(input(self.menu))
+        self.client.send({"option": option})
+        return self.client.receive()
+
+    def run(self):
         self.print_client_info()
+        self.cache_menu()
+
+        while True:
+            self.send_option()
+
         return
