@@ -56,8 +56,8 @@ class Server(object):
                 client_socket, addr = self.server_socket.accept()
                 Thread(target=self._handler, args=(client_socket, addr), daemon=True).start()  # client thread started
             except:
-                # print("ERROR occurred 1")
-                # self.server_socket.close()
+                print("ERROR occurred 1")
+                self.server_socket.close()
                 continue
 
     def _handler(self, client_socket, addr):
