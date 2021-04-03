@@ -22,7 +22,7 @@ class Server(object):
         self.host = host
         self.port = port
         self.server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)  # your implementation for this socket here
-        self.handlers = {}  # initializes client_handlers list
+        self.client_list = {}
 
     def _bind(self):
         """
@@ -55,7 +55,6 @@ class Server(object):
             client_socket, addr = self.server_socket.accept()
             client_thread = Thread(target=self._handler, args=(client_socket, addr), daemon=True)
             client_thread.start()
-            client_thread.join()
 
     def _handler(self, client_socket, addr):
         """
@@ -70,13 +69,19 @@ class Server(object):
         :clienthandler: the clienthandler child process that the server creates when a client is accepted
         :addr: the addr list of server parameters created by the server when a client is accepted.
         """
-        client_id = addr[1]
         client_handler = ClientHandler(self, client_socket, addr)
-        self.handlers[client_id] = client_handler
         client_handler.run()
 
     def get_client_list(self):
-        return self.handlers
+        return self.client_list
+
+    def add_to_client_list(self, client_id, client_name):
+        self.client_list[client_id] = client_name
+        return
+
+    def remove_from_client_list(self, client_id):
+        self.client_list.pop(client_id)
+        return
 
     def run(self):
         """

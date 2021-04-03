@@ -19,7 +19,11 @@ class ClientHelper:
     def send_option(self):
         option = int(input(self.menu))
         self.client.send({"option": option})
-        return self.client.receive()
+        return
+
+    def get_response(self):
+        recv_data = self.client.receive()
+        return recv_data["response"]
 
     def run(self):
         self.print_client_info()
@@ -27,5 +31,6 @@ class ClientHelper:
 
         while True:
             self.send_option()
-
+            response = self.get_response()
+            print(response)
         return
