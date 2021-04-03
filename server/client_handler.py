@@ -38,12 +38,20 @@ class ClientHandler:
     def process_client_option(self):
         request = self.receive()["request"]
         option = request["option"]
+        response_str = None
         if 1 <= option <= 12:
             print("REQUEST:\tClient " + self.client_name + "(client id = " + str(self.client_id) + ") requests for option No." + str(option))
+
             if option == 1:
-                self._option_1_send_user_list()
+                response_str = self._option_1_send_user_list()
+            elif option == 2:
+                response_str = self._option_2_send_a_message(request)
             else:
-                self._option_todo()
+                response_str = self._option_todo()
+
+            time.sleep(1)
+            response_data = {"response": response_str}
+            self.send(response_data)
         else:
             print("REQUEST:\tClient " + self.client_name + "(client id = " + str(self.client_id) + ") requests for an invalid option")
 
@@ -57,18 +65,22 @@ class ClientHandler:
             cnt += 1
             if cnt < num_clients:
                 response_str += ", "
-        time.sleep(1)
-        response_data = {"response": response_str}
-        self.send(response_data)
-        print("RESPONSE:\tSend user list to Client " + self.client_name + "(client id = " + str(self.client_id) + "):")
+        print("OPTION_1:\tSend user list to Client " + self.client_name + "(client id = " + str(self.client_id) + "):")
         print(response_str)
+        return response_str
+
+    def _option_2_send_a_message(self, request):
+        message = request["message"]
+        recipient = request["recipient"]
+        # TO DO: Save message on server with timestamp
+        response_str = "Message sent!"
+        print("OPTION_2:\tSave the message to server")
+        return response_str
 
     def _option_todo(self):
-        response = "RESPONSE:\tThe requested option has not been implemented yet"
-        time.sleep(1)
-        response_data = {"response": response}
-        self.send(response_data)
-        print(response)
+        response_str = "OPTION_TODO:\tThe requested option has not been implemented yet"
+        print(response_str)
+        return response_str
 
     def send(self, data):
         data = pickle.dumps(data)
