@@ -1,4 +1,3 @@
-
 class ClientHelper:
 
     def __init__(self, client):
@@ -22,14 +21,18 @@ class ClientHelper:
         return
 
     def process_option(self):
-        option = int(input(self.menu_str))
-        request_header = self.request_headers[option]
-        for key in request_header:
-            if key != "option":
-                request_header[key] = input(request_header[key])
-        self.client.send({"request": request_header})
+        option = input(self.menu_str)
+        if option in self.request_headers:
+            request_header = self.request_headers[option]
+            request = {"option": request_header["option"]}
+            for key in request_header:
+                if key != "option":
+                    request[key] = input(request_header[key])
+            self.client.send({"request": request})
 
-        print(self.get_response(option) + "\n")
+            print(self.get_response(option) + "\n")
+        else:
+            print("ERROR: Invalid option typed in!!!\n")
         return
 
     def get_response(self, option):

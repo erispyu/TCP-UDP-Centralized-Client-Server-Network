@@ -77,8 +77,9 @@ class Menu:
               the expected headers in a client request are {'option':<integer>, 'message':<string>, 'recipient':<integer>}
         """
         headers = {
-            1: {"option": 1},
-            2: {"option": 2, "message": "Enter your message: ", "recipient": "Enter recipient id: "}
+            "1": {"option": 1},
+            "2": {"option": 2, "message": "Enter your message: ", "recipient": "Enter recipient id: "},
+            "3": {"option": 3}
         }
         return headers
 

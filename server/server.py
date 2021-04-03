@@ -23,6 +23,7 @@ class Server(object):
         self.port = port
         self.server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)  # your implementation for this socket here
         self.client_list = {}
+        self.private_message_list = {}
 
     def _bind(self):
         """
@@ -81,6 +82,17 @@ class Server(object):
 
     def remove_from_client_list(self, client_id):
         self.client_list.pop(client_id)
+        return
+
+    def get_private_message_list(self):
+        return self.private_message_list
+
+    def add_to_private_message_list(self, timestamp, curr_time_format, message, recipient, sender):
+        self.private_message_list[timestamp] = {"curr_time_format": curr_time_format, "message": message, "recipient": recipient, "sender": sender}
+        return
+
+    def remove_from_private_message_list(self, timestamp):
+        self.private_message_list.pop(timestamp)
         return
 
     def run(self):

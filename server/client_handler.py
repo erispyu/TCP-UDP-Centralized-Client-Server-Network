@@ -1,5 +1,6 @@
 import pickle
 import time
+from datetime import datetime
 
 from menu import Menu
 
@@ -46,6 +47,8 @@ class ClientHandler:
                 response_str = self._option_1_send_user_list()
             elif option == 2:
                 response_str = self._option_2_send_a_message(request)
+            elif option == 3:
+                response_str = self._option_3_get_my_messages()
             else:
                 response_str = self._option_todo()
 
@@ -72,9 +75,30 @@ class ClientHandler:
     def _option_2_send_a_message(self, request):
         message = request["message"]
         recipient = request["recipient"]
-        # TO DO: Save message on server with timestamp
+        timestamp = time.time()
+        curr_time = datetime.now()
+        curr_time_format = curr_time.strftime("%Y-%m-%d %H:%M:%S")
+        self.server.add_to_private_message_list(timestamp, curr_time_format, message, recipient, self.client_name)
         response_str = "Message sent!"
-        print("OPTION_2:\tSave the message to server")
+        print("OPTION_2:\tSave the message to server from Client " + self.client_name + "(client id = " + str(self.client_id) + ")")
+        return response_str
+
+    def _option_3_get_my_messages(self):
+        private_message_list = self.server.get_private_message_list()
+        response_str = ""
+        cnt = 0
+        private_has_read = []
+        for key in private_message_list:
+            message_data = private_message_list[key]
+            if message_data["recipient"] == str(self.client_id):
+                response_str += (message_data["curr_time_format"] + ": " + message_data["message"] + " (private message from " + message_data["sender"] + ")")
+                cnt += 1
+                private_has_read.append(key)
+        response_str = "Number of unread messages: " + str(cnt) + "\n" + response_str
+        print("OPTION_3:\tShow unread messages to Client " + self.client_name + "(client id = " + str(self.client_id) + ")")
+        for key in private_has_read:
+            self.server.remove_from_private_message_list(key)
+            print("OPTION_3:\tRemove message with timestamp " + str(key))
         return response_str
 
     def _option_todo(self):
