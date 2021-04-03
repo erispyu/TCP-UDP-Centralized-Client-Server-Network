@@ -3,7 +3,9 @@ class ClientHelper:
 
     def __init__(self, client):
         self.client = client
-        self.menu = None
+        self.menu_str = None
+        self.request_headers = {}
+        self.response_headers = {}
 
     # TODO: Implement your ClientHelper for this project
     def print_client_info(self):
@@ -13,15 +15,24 @@ class ClientHelper:
 
     def cache_menu(self):
         recv_data = self.client.receive()
-        self.menu = recv_data["menu"]
+        menu = recv_data["menu"]
+        self.menu_str = menu["menu_str"]
+        self.request_headers = menu["request_headers"]
+        self.response_headers = menu["response_headers"]
         return
 
-    def send_option(self):
-        option = int(input(self.menu))
-        self.client.send({"option": option})
+    def process_option(self):
+        option = int(input(self.menu_str))
+        request_header = self.request_headers[option]
+        for key in request_header:
+            if key != "option":
+                request_header[key] = input(request_header[key])
+        self.client.send({"request": request_header})
+
+        print(self.get_response(option) + "\n")
         return
 
-    def get_response(self):
+    def get_response(self, option):
         recv_data = self.client.receive()
         return recv_data["response"]
 
@@ -30,7 +41,5 @@ class ClientHelper:
         self.cache_menu()
 
         while True:
-            self.send_option()
-            response = self.get_response()
-            print(response)
+            self.process_option()
         return

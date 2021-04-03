@@ -76,7 +76,10 @@ class Menu:
               for each requests from the client related to this menu. For example, the headers for option 2,
               the expected headers in a client request are {'option':<integer>, 'message':<string>, 'recipient':<integer>}
         """
-        headers = ""
+        headers = {
+            1: {"option": 1},
+            2: {"option": 2, "message": "Enter your message: ", "recipient": "Enter recipient id: "}
+        }
         return headers
 
     @staticmethod
@@ -86,5 +89,7 @@ class Menu:
               the client for each response related to this menu. For example, the headers for the response of option 3
               are {'option':<integer>, 'messages':<Python Dictionary>}
         """
-        headers = ""
+        headers = {
+            1: {"option": 1, "response_str": None}
+        }
         return headers
