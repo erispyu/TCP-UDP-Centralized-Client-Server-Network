@@ -52,13 +52,10 @@ class Server(object):
         :return: VOID
         """
         while True:
-            try:
-                client_socket, addr = self.server_socket.accept()
-                Thread(target=self._handler, args=(client_socket, addr), daemon=True).start()  # client thread started
-            except:
-                print("ERROR occurred 1")
-                self.server_socket.close()
-                continue
+            client_socket, addr = self.server_socket.accept()
+            client_thread = Thread(target=self._handler, args=(client_socket, addr), daemon=True)
+            client_thread.start()
+            client_thread.join()
 
     def _handler(self, client_socket, addr):
         """
@@ -74,11 +71,6 @@ class Server(object):
         :addr: the addr list of server parameters created by the server when a client is accepted.
         """
         client_id = addr[1]
-
-        # send client_id to the client
-        client_id_data = {'client_id': client_id}
-        client_socket.send(pickle.dumps(client_id_data))
-
         client_handler = ClientHandler(self, client_socket, addr)
         self.handlers[client_id] = client_handler
         client_handler.run()

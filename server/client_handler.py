@@ -16,13 +16,8 @@ class ClientHandler:
 
     # TODO: implement the ClientHandler for this project.
 
-    # def get_client_id(self):
-    #     return self.client_id
-    #
-    # def get_client_name(self):
-    #     return self.client_name
-
     def process_client_info(self):
+        self.send({'client_id': self.client_id})
         client_info = self.receive()
         self.client_name = client_info["client_name"]
         self.client_id = client_info["client_id"]
