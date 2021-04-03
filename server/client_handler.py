@@ -31,7 +31,6 @@ class ClientHandler:
 
     def receive_option(self):
         option = self.receive()["option"]
-
         return option
 
     def process_client_option(self):
@@ -47,6 +46,9 @@ class ClientHandler:
 
     def receive(self):
         data = self.client_socket.recv(4090)
+        if not data:
+            print("Client " + self.client_name + "(client id = " + str(self.client_id) + ") disconnected!")
+            exit(1)
         return pickle.loads(data)
 
     def run(self):
