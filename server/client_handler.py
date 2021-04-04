@@ -51,6 +51,8 @@ class ClientHandler:
                 response_str = self._option_2_send_a_message(request)
             elif option == 3:
                 response_str = self._option_3_get_my_messages()
+            elif option == 4:
+                response_str = self._option_4_send_a_direct_msg_via_udp(request)
             else:
                 response_str = self._option_todo()
             time.sleep(1)
@@ -129,6 +131,10 @@ class ClientHandler:
             self.server.remove_from_private_message_list(key)
 
         return response_str
+
+    def _option_4_send_a_direct_msg_via_udp(self, request):
+        print("OPTION_4\tClient " + self.client_name + "(client id = " + str(self.client_id) + ") sent a direct message to " + request["recipient_address"] + " from " + request["sender_address"])
+        return None
 
     def _option_todo(self):
         response_str = "OPTION_TODO:\tThe requested option has not been implemented yet"

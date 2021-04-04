@@ -79,7 +79,12 @@ class Menu:
         headers = {
             "1": {"option": 1},
             "2": {"option": 2, "message": "Enter your message: ", "recipient": "Enter recipient id: "},
-            "3": {"option": 3}
+            "3": {"option": 3},
+            "4": {"option": 4,
+                  "udp": None,
+                  "sender_address": "Enter the address to bind your UDP client (e.g 127.0.0.1:6000): ",
+                  "recipient_address": "Enter the recipient address: ",
+                  "message": "Enter the message: "},
         }
         return headers
 
@@ -91,6 +96,7 @@ class Menu:
               are {'option':<integer>, 'messages':<Python Dictionary>}
         """
         headers = {
-            1: {"option": 1, "response_str": None}
+            "1": {"option": 1, "response_str": None},
+            "4": {"option": 1, "sender_address": "UDP client running and accepting other clients at udp address ", "recipient_address": "Message sent to udp address: "}
         }
         return headers
