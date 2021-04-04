@@ -115,12 +115,12 @@ class ClientHandler:
                 response_str += (message_data["curr_time_format"] + ": " + message_data[
                     "message"] + " (broadcast message from " + message_data["sender"] + ")\n")
                 print("OPTION_3:\tClient " + self.client_name + "(client id = " + str(
-                    self.client_id) + ")" + "has read public message with timestamp " + str(key))
+                    self.client_id) + ")" + " has read public message with timestamp " + str(key))
             else:
                 response_str += (message_data["curr_time_format"] + ": " + message_data[
                     "message"] + " (private message from " + message_data["sender"] + ")\n")
                 print("OPTION_3:\tClient " + self.client_name + "(client id = " + str(
-                    self.client_id) + ")" + "has read private message with timestamp " + str(key))
+                    self.client_id) + ")" + " has read private message with timestamp " + str(key))
 
         response_str = "Number of unread messages: " + str(len(reading_list)) + "\n" + response_str
         print("OPTION_3:\tShow unread messages to Client " + self.client_name + "(client id = " + str(self.client_id) + ")")
