@@ -30,7 +30,7 @@ class ClientHelper:
                     request[key] = input(request_header[key])
             self.client.send({"request": request})
 
-            print(self.get_response(option) + "\n")
+            print(self.get_response(option))
         else:
             print("ERROR: Invalid option typed in!!!\n")
         return

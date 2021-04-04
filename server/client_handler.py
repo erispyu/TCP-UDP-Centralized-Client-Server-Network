@@ -17,6 +17,8 @@ class ClientHandler:
         self.request_headers = self.menu.request_headers(self=self.menu)
         self.response_headers = self.menu.response_headers(self=self.menu)
 
+        self.broadcast_has_read = []
+
     # TODO: implement the ClientHandler for this project.
 
     def process_client_info(self):
@@ -51,7 +53,6 @@ class ClientHandler:
                 response_str = self._option_3_get_my_messages()
             else:
                 response_str = self._option_todo()
-
             time.sleep(1)
             response_data = {"response": response_str}
             self.send(response_data)
@@ -68,6 +69,7 @@ class ClientHandler:
             cnt += 1
             if cnt < num_clients:
                 response_str += ", "
+        response_str += "\n"
         print("OPTION_1:\tSend user list to Client " + self.client_name + "(client id = " + str(self.client_id) + "):")
         print(response_str)
         return response_str
@@ -78,27 +80,54 @@ class ClientHandler:
         timestamp = time.time()
         curr_time = datetime.now()
         curr_time_format = curr_time.strftime("%Y-%m-%d %H:%M:%S")
-        self.server.add_to_private_message_list(timestamp, curr_time_format, message, recipient, self.client_name)
-        response_str = "Message sent!"
-        print("OPTION_2:\tSave the message to server from Client " + self.client_name + "(client id = " + str(self.client_id) + ")")
+        if recipient == "broadcast":
+            self.server.add_to_broadcast_message_list(timestamp, curr_time_format, message, recipient, self.client_name)
+            self.broadcast_has_read.append(timestamp)
+        else:
+            self.server.add_to_private_message_list(timestamp, curr_time_format, message, recipient, self.client_name)
+        response_str = "Message sent!\n"
+        print("OPTION_2:\tSave the message with timestamp " + str(timestamp) + " to server from Client " + self.client_name + "(client id = " + str(self.client_id) + ")")
         return response_str
 
     def _option_3_get_my_messages(self):
         private_message_list = self.server.get_private_message_list()
+        broadcast_message_list = self.server.get_broadcast_message_list()
+        reading_list = {}
         response_str = ""
-        cnt = 0
         private_has_read = []
+
         for key in private_message_list:
             message_data = private_message_list[key]
             if message_data["recipient"] == str(self.client_id):
-                response_str += (message_data["curr_time_format"] + ": " + message_data["message"] + " (private message from " + message_data["sender"] + ")")
-                cnt += 1
+                reading_list[key] = message_data
                 private_has_read.append(key)
-        response_str = "Number of unread messages: " + str(cnt) + "\n" + response_str
+
+        for key in broadcast_message_list:
+            if key in self.broadcast_has_read:
+                continue
+            reading_list[key] = broadcast_message_list[key]
+            self.broadcast_has_read.append(key)
+
+        sorted_reading_list = sorted(reading_list.items())
+
+        for key, message_data in sorted_reading_list:
+            if message_data["recipient"] == "broadcast":
+                response_str += (message_data["curr_time_format"] + ": " + message_data[
+                    "message"] + " (broadcast message from " + message_data["sender"] + ")\n")
+                print("OPTION_3:\tClient " + self.client_name + "(client id = " + str(
+                    self.client_id) + ")" + "has read public message with timestamp " + str(key))
+            else:
+                response_str += (message_data["curr_time_format"] + ": " + message_data[
+                    "message"] + " (private message from " + message_data["sender"] + ")\n")
+                print("OPTION_3:\tClient " + self.client_name + "(client id = " + str(
+                    self.client_id) + ")" + "has read private message with timestamp " + str(key))
+
+        response_str = "Number of unread messages: " + str(len(reading_list)) + "\n" + response_str
         print("OPTION_3:\tShow unread messages to Client " + self.client_name + "(client id = " + str(self.client_id) + ")")
+
         for key in private_has_read:
             self.server.remove_from_private_message_list(key)
-            print("OPTION_3:\tRemove message with timestamp " + str(key))
+
         return response_str
 
     def _option_todo(self):
