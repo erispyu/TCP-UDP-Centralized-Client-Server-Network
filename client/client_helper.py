@@ -10,6 +10,7 @@ class ClientHelper:
         self.request_headers = {}
         self.response_headers = {}
         self.udp_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        self.udp_socket.settimeout(1)
         self.udp_flag = False
 
     # TODO: Implement your ClientHelper for this project
@@ -53,13 +54,16 @@ class ClientHelper:
         return
 
     def udp_recv(self):
-        recv_data = self.udp_socket.recvfrom(4090)
-        if not recv_data:
+        try:
+            recv_data = self.udp_socket.recvfrom(4090)
+            if not recv_data:
+                return
+            message = recv_data[0]
+            ip_address, port = recv_data[1]
+            print("Receive a direct message from the udp address " + ip_address + ":" + str(port))
+            print("Direct Message Content: " + pickle.loads(message) + "\n")
+        except socket.timeout:
             return
-        message = recv_data[0]
-        ip_address, port = recv_data[1]
-        print("Receive a direct message from the udp address " + ip_address + ":" + str(port))
-        print("Direct Message Content: " + pickle.loads(message) + "\n")
 
     def parse_udp_address(self, udp_address):
         split_index = udp_address.index(':')
