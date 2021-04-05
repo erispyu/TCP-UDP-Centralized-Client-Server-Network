@@ -23,8 +23,7 @@ class Server(object):
         self.port = port
         self.server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)  # your implementation for this socket here
         self.client_list = {}
-        self.private_message_list = {}
-        self.broadcast_message_list = {}
+        self.message_list = {}
 
     def _bind(self):
         """
@@ -85,22 +84,15 @@ class Server(object):
         self.client_list.pop(client_id)
         return
 
-    def get_private_message_list(self):
-        return self.private_message_list
+    def get_message_list(self):
+        return self.message_list
 
-    def add_to_private_message_list(self, timestamp, curr_time_format, message, recipient, sender):
-        self.private_message_list[timestamp] = {"curr_time_format": curr_time_format, "message": message, "recipient": recipient, "sender": sender}
+    def add_to_message_list(self, timestamp, curr_time_format, message, recipient, sender, private):
+        self.message_list[timestamp] = {"curr_time_format": curr_time_format, "message": message, "recipient": recipient, "sender": sender, "private": private}
         return
 
-    def remove_from_private_message_list(self, timestamp):
-        self.private_message_list.pop(timestamp)
-        return
-
-    def get_broadcast_message_list(self):
-        return self.broadcast_message_list
-
-    def add_to_broadcast_message_list(self, timestamp, curr_time_format, message, recipient, sender):
-        self.broadcast_message_list[timestamp] = {"curr_time_format": curr_time_format, "message": message, "recipient": recipient, "sender": sender}
+    def remove_from_message_list(self, timestamp):
+        self.message_list.pop(timestamp)
         return
 
     def run(self):

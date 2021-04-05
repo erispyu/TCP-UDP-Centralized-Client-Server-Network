@@ -52,7 +52,9 @@ class ClientHandler:
             elif option == 3:
                 response_str = self._option_3_get_my_messages()
             elif option == 4:
-                response_str = self._option_4_send_a_direct_msg_via_udp(request)
+                self._option_4_send_a_direct_msg_via_udp(request)
+            elif option == 5:
+                response_str = self._option_5_send_a_broadcast_message(request)
             else:
                 response_str = self._option_todo()
             time.sleep(1)
@@ -81,39 +83,26 @@ class ClientHandler:
         recipient = request["recipient"]
         timestamp = time.time()
         curr_time = datetime.now()
-        curr_time_format = curr_time.strftime("%Y-%m-%d %H:%M:%S")
-        if recipient == "broadcast":
-            self.server.add_to_broadcast_message_list(timestamp, curr_time_format, message, recipient, self.client_name)
-            self.broadcast_has_read.append(timestamp)
-        else:
-            self.server.add_to_private_message_list(timestamp, curr_time_format, message, recipient, self.client_name)
+        curr_time_format = curr_time.strftime("%Y-%m-%d %H:%M")
+        self.server.add_to_message_list(timestamp, curr_time_format, message, recipient, self.client_name, private=True)
         response_str = "Message sent!\n"
-        print("OPTION_2:\tSave the message with timestamp " + str(timestamp) + " to server from Client " + self.client_name + "(client id = " + str(self.client_id) + ")")
+        print("OPTION_2:\tSave the private message with timestamp " + str(timestamp) + " to server from Client " + self.client_name + "(client id = " + str(self.client_id) + ")")
         return response_str
 
     def _option_3_get_my_messages(self):
-        private_message_list = self.server.get_private_message_list()
-        broadcast_message_list = self.server.get_broadcast_message_list()
+        message_list = self.server.get_message_list()
         reading_list = {}
         response_str = ""
-        private_has_read = []
 
-        for key in private_message_list:
-            message_data = private_message_list[key]
+        for key in message_list:
+            message_data = message_list[key]
             if message_data["recipient"] == str(self.client_id):
                 reading_list[key] = message_data
-                private_has_read.append(key)
-
-        for key in broadcast_message_list:
-            if key in self.broadcast_has_read:
-                continue
-            reading_list[key] = broadcast_message_list[key]
-            self.broadcast_has_read.append(key)
 
         sorted_reading_list = sorted(reading_list.items())
 
         for key, message_data in sorted_reading_list:
-            if message_data["recipient"] == "broadcast":
+            if message_data["private"] is False:
                 response_str += (message_data["curr_time_format"] + ": " + message_data[
                     "message"] + " (broadcast message from " + message_data["sender"] + ")\n")
                 print("OPTION_3:\tClient " + self.client_name + "(client id = " + str(
@@ -127,14 +116,28 @@ class ClientHandler:
         response_str = "Number of unread messages: " + str(len(reading_list)) + "\n" + response_str
         print("OPTION_3:\tShow unread messages to Client " + self.client_name + "(client id = " + str(self.client_id) + ")")
 
-        for key in private_has_read:
-            self.server.remove_from_private_message_list(key)
+        for key in reading_list:
+            self.server.remove_from_message_list(key)
 
         return response_str
 
     def _option_4_send_a_direct_msg_via_udp(self, request):
         print("OPTION_4\tClient " + self.client_name + "(client id = " + str(self.client_id) + ") sent a direct message to " + request["recipient_address"] + " from " + request["sender_address"])
         return None
+
+    def _option_5_send_a_broadcast_message(self, request):
+        message = request["message"]
+        curr_time = datetime.now()
+        curr_time_format = curr_time.strftime("%Y-%m-%d %H:%M")
+        for client in self.server.get_client_list():
+            if client != self.client_id:
+                recipient = str(client)
+                timestamp = time.time()
+                self.server.add_to_message_list(timestamp, curr_time_format, message, recipient, self.client_name, private=False)
+                print("OPTION_5:\tSave the broadcast message with timestamp " + str(
+                    timestamp) + " to server from Client " + self.client_name + "(client id = " + str(self.client_id) + ")")
+        response_str = "Message broadcast!\n"
+        return response_str
 
     def _option_todo(self):
         response_str = "OPTION_TODO:\tThe requested option has not been implemented yet"

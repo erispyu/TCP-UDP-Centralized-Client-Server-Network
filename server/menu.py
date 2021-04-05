@@ -85,6 +85,7 @@ class Menu:
                   "sender_address": "Enter the address to bind your UDP client (e.g 127.0.0.1:6000): ",
                   "recipient_address": "Enter the recipient address: ",
                   "message": "Enter the message: "},
+            "5": {"option": 5, "message": "Enter the message: "}
         }
         return headers
 
