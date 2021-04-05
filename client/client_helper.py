@@ -1,5 +1,7 @@
 import socket
 import pickle
+from threading import Thread
+import time
 
 
 class ClientHelper:
@@ -39,8 +41,9 @@ class ClientHelper:
             self.client.send({"request": request})
 
             if "udp" in request_header:
-                self.udp_socket.bind(self.parse_udp_address(request["sender_address"]))
-                self.udp_flag = True
+                if self.udp_flag is False:
+                    self.udp_socket.bind(self.parse_udp_address(request["sender_address"]))
+                    self.udp_flag = True
                 print(self.response_headers[option_str]["sender_address"] + request["sender_address"])
                 message_data = pickle.dumps(request["message"])
                 self.udp_socket.sendto(message_data, self.parse_udp_address(request["recipient_address"]))
@@ -54,16 +57,21 @@ class ClientHelper:
         return
 
     def udp_recv(self):
-        try:
-            recv_data = self.udp_socket.recvfrom(4090)
-            if not recv_data:
-                return
-            message = recv_data[0]
-            ip_address, port = recv_data[1]
-            print("Receive a direct message from the udp address " + ip_address + ":" + str(port))
-            print("Direct Message Content: " + pickle.loads(message) + "\n")
-        except socket.timeout:
-            return
+        while True:
+            if self.udp_flag:
+                try:
+                    recv_data = self.udp_socket.recvfrom(4090)
+                    if not recv_data:
+                        continue
+                    message = recv_data[0]
+                    ip_address, port = recv_data[1]
+                    print("\n")
+                    print("Receive a direct message from the udp address " + ip_address + ":" + str(port))
+                    print("Direct Message Content: " + pickle.loads(message) + "\n")
+                except socket.timeout:
+                    continue
+            else:
+                continue
 
     def parse_udp_address(self, udp_address):
         split_index = udp_address.index(':')
@@ -78,9 +86,10 @@ class ClientHelper:
     def run(self):
         self.print_client_info()
         self.cache_menu()
+        udp_thread = Thread(target=self.udp_recv, daemon=True)
+        udp_thread.start()
 
         while True:
             self.process_option()
-            if self.udp_flag:
-                self.udp_recv()
+            time.sleep(1)
         return
