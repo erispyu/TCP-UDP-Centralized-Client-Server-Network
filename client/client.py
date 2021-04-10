@@ -27,8 +27,8 @@ class Client(object):
         Class constructor
         """
         self.client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        self.server_ip = "127.0.0.1"
-        self.server_port = 12000
+        self.server_ip = None
+        self.server_port = 0
         self.client_id = 0
         self.client_name = None
 
@@ -41,8 +41,8 @@ class Client(object):
         """
         try:
             # get server info
-            # self.server_ip = input("Enter the server IP Address: ")
-            # self.server_port = int(input("Enter the server port: "))
+            self.server_ip = input("Enter the server IP Address: ")
+            self.server_port = int(input("Enter the server port: "))
             # get client name
             self.client_name = input("Enter a username: ")
             # connect
