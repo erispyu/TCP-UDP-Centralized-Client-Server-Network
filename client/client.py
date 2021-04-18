@@ -40,9 +40,16 @@ class Client(object):
         :server_port: the port of the server
         """
         try:
-            # get server info
-            self.server_ip = input("Enter the server IP Address: ")
-            self.server_port = int(input("Enter the server port: "))
+            # # get server info
+            # self.server_ip = input("Enter the server IP Address: ")
+            # self.server_port = int(input("Enter the server port: "))
+
+            # For local test
+            self.server_ip = "127.0.0.1"
+            print("The server IP address is: " + self.server_ip)
+            self.server_port = 12000
+            print("The sercer port is: " + str(self.server_port))
+
             # get client name
             self.client_name = input("Enter a username: ")
             # connect
