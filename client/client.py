@@ -48,7 +48,7 @@ class Client(object):
             self.server_ip = "127.0.0.1"
             print("The server IP address is: " + self.server_ip)
             self.server_port = 12000
-            print("The sercer port is: " + str(self.server_port))
+            print("The server port is: " + str(self.server_port))
 
             # get client name
             self.client_name = input("Enter a username: ")
