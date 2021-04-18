@@ -101,3 +101,6 @@ class Menu:
             "4": {"option": 1, "sender_address": "UDP client running and accepting other clients at udp address ", "recipient_address": "Message sent to udp address: "}
         }
         return headers
+
+    walsh_transform_1 = [1, 1, 1, 1, 1, 1, 1, 1]
+    walsh_transform_2 = [1, 1, 1, 1, -1, -1, -1, -1]
