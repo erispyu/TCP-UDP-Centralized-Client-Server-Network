@@ -50,10 +50,11 @@ class Menu:
                "6.  Create a secure channel to chat with your friends using PGP protocol\n" \
                "7.  Join an existing channel\n" \
                "8.  Create a Bot to manage a future channel\n" \
-               "9.  Get the Routing Table of this client with Link State Protocol\n" \
-               "10. Get the Routing Table of this network with Distance Vector Protocol\n" \
-               "11. Turn web proxy server on (extra-credit)\n" \
-               "12. Disconnect from server\n" \
+               "9.  Map the network\n" \
+               "10.  Get the Routing Table of this client with Link State Protocol\n" \
+               "11. Get the Routing Table of this network with Distance Vector Protocol\n" \
+               "12. Turn web proxy server on (extra-credit)\n" \
+               "13. Disconnect from server\n" \
                "\n" \
                "Your option <enter a number>: "
         # your code here
