@@ -19,7 +19,7 @@ class ClientHandler:
 
         self.broadcast_has_read = []
 
-        self.channel_id = None
+        self.channel_info = {}
 
     # TODO: implement the ClientHandler for this project.
 
@@ -35,7 +35,6 @@ class ClientHandler:
         print("CONNECT:\tClient " + self.client_name + "(client id = " + str(self.client_id) + ") has successfully connected to the server.")
 
     def send_menu(self):
-        time.sleep(1)
         menu_data = {"menu_str": self.menu.get(self=self.menu), "request_headers": self.request_headers, "response_headers": self.response_headers}
         self.send({"menu": menu_data})
         print("CACHE_MENU:\tSend menu to Client " + self.client_name + "(client id = " + str(self.client_id) + ")")
@@ -49,24 +48,32 @@ class ClientHandler:
 
             if option == 1:
                 response_str = self._option_1_send_user_list()
+                response_data = {"response": response_str}
+                self.send(response_data)
             elif option == 2:
                 response_str = self._option_2_send_a_message(request)
+                response_data = {"response": response_str}
+                self.send(response_data)
             elif option == 3:
                 response_str = self._option_3_get_my_messages()
+                response_data = {"response": response_str}
+                self.send(response_data)
             elif option == 4:
                 self._option_4_send_a_direct_msg_via_udp(request)
+                response_data = {"response": response_str}
+                self.send(response_data)
             elif option == 5:
                 response_str = self._option_5_send_a_broadcast_message(request)
+                response_data = {"response": response_str}
+                self.send(response_data)
             elif option == 6:
                 response_str = self._option_6_create_a_secure_channel(request)
+                response_data = {"response": response_str}
+                self.send(response_data)
+
+                self._loop_in_channel()
             else:
                 response_str = self._option_todo()
-            time.sleep(1)
-            response_data = {"response": response_str}
-            self.send(response_data)
-
-            if option == 6 or 7:
-                self._loop_in_channel()
         else:
             print("REQUEST:\tClient " + self.client_name + "(client id = " + str(self.client_id) + ") requests for an invalid option")
 
@@ -147,14 +154,17 @@ class ClientHandler:
         return response_str
 
     def _option_6_create_a_secure_channel(self, request):
-        self.channel_id = request["message"]
+        channel_id = request["channel_id"]
+        self.channel_info["channel_id"] = channel_id
+        self.channel_info["admin_id"] = int(self.client_id)
+        self.channel_info["admin_name"] = self.client_name
 
-        self.server.creat_a_channel(self.channel_id, self.client_id, self.client_name)
-        print("OPTION_6:\tChannel #" + self.channel_id + " created, admin is " + self.client_name)
+        self.server.creat_a_channel(channel_id, self.client_id, self.client_name)
+        print("OPTION_6:\tChannel #" + channel_id + " created, admin is " + self.client_name)
 
-        response_str = "Private key received from server and channel " + self.channel_id + " was successfully created!\n" + \
+        response_str = "Private key received from server and channel " + channel_id + " was successfully created!\n" + \
                        "\n" + \
-                       "----------------------- Channel " + self.channel_id + " ------------------------\n" + \
+                       "----------------------- Channel " + channel_id + " ------------------------\n" + \
                        "\n" + \
                        "All the data in this channel is encrypted\n" + \
                        "\n" + \
@@ -168,8 +178,39 @@ class ClientHandler:
         return response_str
 
     def _loop_in_channel(self):
+        time.sleep(1)
+        self.send({"channel_info": self.channel_info})
+        print("OPTION_6:\tSend channel info to Client " + self.client_name + "(client id = " + str(self.client_id) + ")")
+
+        has_read_list = []
+
         while True:
-            return
+            channel_msg_list = self.server.get_channel_msg_list(self.channel_info["channel_id"])
+            for key in channel_msg_list:
+                if key not in has_read_list:
+                    msg_data = channel_msg_list[key]
+                    if msg_data["sender_name"] != self.client_name:
+                        if msg_data["receiver_name"] == "channel_public" or msg_data["receiver_name"] == self.client_name:
+                            self.send({"chat_msg_recv": msg_data["message"]})
+                            has_read_list.append(key)
+
+            new_msg = self.receive()["chat_msg_send"]
+            sender_name = self.client_name
+            receiver_name = "channel_public";
+            if new_msg[0] == '#':
+                if self.client_id == self.channel_info["admin_id"] and new_msg == "#exit":
+                    return
+                elif self.client_id != self.channel_info["admin_id"] and new_msg == "#bye":
+                    return
+                else:
+                    receiver_name = new_msg.split()[0][1:]
+                    new_msg = new_msg[len(receiver_name) + 2:]
+
+            new_msg = sender_name + "> " + new_msg
+
+            timestamp = time.time()
+            msg_data = {"sender_name": sender_name, "receiver_name": receiver_name, "message": new_msg}
+            self.server.add_msg_to_channel(self.channel_info["channel_id"], timestamp, msg_data)
 
     def _option_todo(self):
         response_str = "OPTION_TODO:\tThe requested option has not been implemented yet"

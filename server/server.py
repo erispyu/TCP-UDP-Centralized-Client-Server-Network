@@ -97,7 +97,16 @@ class Server(object):
         return
 
     def creat_a_channel(self, channel_id, admin_id, admin_name):
-        self.channels[channel_id] = {"admin_id": admin_id, "admin_name": admin_name, "normal_users": []}
+        self.channels[channel_id] = {"admin_id": admin_id, "admin_name": admin_name, "normal_users": [], "msg_list": {}}
+
+    def add_msg_to_channel(self, channel_id, timestamp, msg_data):
+        channel = self.channels[channel_id]
+        msg_list = channel["msg_list"]
+        msg_list[timestamp] = msg_data
+        return
+
+    def get_channel_msg_list(self, channel_id):
+        return self.channels[channel_id]["msg_list"]
 
     def run(self):
         """

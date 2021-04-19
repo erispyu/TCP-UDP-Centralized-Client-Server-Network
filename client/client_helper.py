@@ -36,7 +36,7 @@ class ClientHelper:
             request_header = self.request_headers[option_str]
             request = {"option": option}
             for key in request_header:
-                if key != "option" and key != "udp":
+                if key != "option" and request_header[key] is not None:
                     request[key] = input(request_header[key])
             self.client.send({"request": request})
 
@@ -49,12 +49,29 @@ class ClientHelper:
                 self.udp_socket.sendto(message_data, self.parse_udp_address(request["recipient_address"]))
                 print(self.response_headers[option_str]["recipient_address"] + request["recipient_address"] + "\n")
 
-            response_str = self.get_response(option_str)
+            response_str = self.get_response()
             if response_str is not None:
                 print(response_str)
+
+            if "channel" in request_header:
+                channel_info = self.get_channel_info()
+                channel_id = channel_info["channel_id"]
+                admin_id = channel_info["admin_id"]
+                recv_thread = Thread(target=self.print_chat_msg_recv)
+                recv_thread.start()
+                while True:
+                    chat_msg_send = input(self.client.client_name + ">")
+                    self.client.send({"chat_msg_send": chat_msg_send})
+                    if str(self.client.client_id) == admin_id:
+                        if chat_msg_send == "#exit":
+                            break;
         else:
             print("ERROR: Invalid option typed in!!!\n")
         return
+
+    def print_chat_msg_recv(self):
+        chat_msg_recv = self.client.receive()["chat_msg_recv"]
+        print(chat_msg_recv + "\n")
 
     def udp_recv(self):
         while True:
@@ -79,9 +96,13 @@ class ClientHelper:
         port = int(udp_address[split_index + 1:])
         return ip_addr, port
 
-    def get_response(self, option):
+    def get_response(self):
         recv_data = self.client.receive()
         return recv_data["response"]
+
+    def get_channel_info(self):
+        recv_data = self.client.receive()
+        return recv_data["channel_info"]
 
     def run(self):
         self.print_client_info()
