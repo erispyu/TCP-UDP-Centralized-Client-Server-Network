@@ -2,6 +2,8 @@ import socket
 import pickle
 from threading import Thread
 import time
+import sys
+import select
 
 
 class ClientHelper:
@@ -58,20 +60,30 @@ class ClientHelper:
                 channel_id = channel_info["channel_id"]
                 admin_id = channel_info["admin_id"]
                 recv_thread = Thread(target=self.print_chat_msg_recv)
+                send_thread = Thread(target=self.send_chat_msg)
                 recv_thread.start()
+                send_thread.start()
                 while True:
-                    chat_msg_send = input(self.client.client_name + ">")
-                    self.client.send({"chat_msg_send": chat_msg_send})
-                    if str(self.client.client_id) == admin_id:
-                        if chat_msg_send == "#exit":
-                            break;
+                    data = self.client.receive()
         else:
             print("ERROR: Invalid option typed in!!!\n")
         return
 
     def print_chat_msg_recv(self):
-        chat_msg_recv = self.client.receive()["chat_msg_recv"]
-        print(chat_msg_recv + "\n")
+        while True:
+            chat_msg_recv = self.client.receive()["chat_msg_recv"]
+            print(chat_msg_recv + "\n")
+
+    def send_chat_msg(self):
+        while True:
+            while sys.stdin in select.select([sys.stdin], [], [], 0)[0]:
+                line = sys.stdin.readline()
+                if line:
+                    self.client.send({"chat_msg_send": line})
+        # while True:
+        #     chat_msg = input(self.client.client_name + "> ")
+        #     if chat_msg is not None and len(chat_msg) > 0:
+        #         self.client.send({"chat_msg_send": chat_msg})
 
     def udp_recv(self):
         while True:

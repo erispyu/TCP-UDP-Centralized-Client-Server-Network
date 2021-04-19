@@ -70,11 +70,19 @@ class ClientHandler:
                 response_str = self._option_6_create_a_secure_channel(request)
                 response_data = {"response": response_str}
                 self.send(response_data)
+                time.sleep(1)
+                self.send({"channel_info": self.channel_info})
+                print("OPTION_6:\tSend channel info to Client " + self.client_name + "(client id = " + str(
+                    self.client_id) + ")")
                 self._loop_in_channel()
             elif option == 7:
                 response_str = self._option_7_join_an_existing_channel(request)
                 response_data = {"response": response_str}
                 self.send(response_data)
+                time.sleep(1)
+                self.send({"channel_info": self.channel_info})
+                print("OPTION_7:\tSend channel info to Client " + self.client_name + "(client id = " + str(
+                    self.client_id) + ")")
                 self._loop_in_channel()
             else:
                 response_str = self._option_todo()
@@ -206,7 +214,7 @@ class ClientHandler:
         print("OPTION_7:\tAdd Client " + self.client_name + "(client id = " + str(
             self.client_id) + ") to channel #" + channel_id)
 
-        response_str = "----------------------- Channel " + channel_id + " ------------------------\n" + \
+        response_str = "\n----------------------- Channel " + channel_id + " ------------------------\n" + \
                        "\n" + \
                        "All the data in this channel is encrypted\n" + \
                        "\n" + \
@@ -221,12 +229,7 @@ class ClientHandler:
         return response_str
 
     def _loop_in_channel(self):
-        time.sleep(1)
-        self.send({"channel_info": self.channel_info})
-        print("OPTION_6|7:\tSend channel info to Client " + self.client_name + "(client id = " + str(self.client_id) + ")")
-
         has_read_list = []
-
         while True:
             channel_msg_list = self.server.get_channel_msg_list(self.channel_info["channel_id"])
             for key in channel_msg_list:
@@ -240,20 +243,21 @@ class ClientHandler:
             new_msg = self.receive()["chat_msg_send"]
             sender_name = self.client_name
             receiver_name = "channel_public";
-            if new_msg[0] == '#':
-                if self.client_id == self.channel_info["admin_id"] and new_msg == "#exit":
-                    return
-                elif self.client_id != self.channel_info["admin_id"] and new_msg == "#bye":
-                    return
-                else:
-                    receiver_name = new_msg.split()[0][1:]
-                    new_msg = new_msg[len(receiver_name) + 2:]
+            # if len(new_msg) > 0 and new_msg[0] == '#':
+            #     if self.client_id == self.channel_info["admin_id"] and new_msg == "#exit":
+            #         return
+            #     elif self.client_id != self.channel_info["admin_id"] and new_msg == "#bye":
+            #         return
+            #     else:
+            #         receiver_name = new_msg.split()[0][1:]
+            #         new_msg = new_msg[len(receiver_name) + 2:]
 
-            new_msg = sender_name + "> " + new_msg
+            # new_msg = sender_name + "> " + new_msg
 
             timestamp = time.time()
             msg_data = {"sender_name": sender_name, "receiver_name": receiver_name, "message": new_msg}
             self.server.add_msg_to_channel(self.channel_info["channel_id"], timestamp, msg_data)
+            print("OPTION_6|7:\tAdd message with timestamp=" + str(timestamp) + " to channel #" + self.channel_info["channel_id"])
 
     def _option_todo(self):
         response_str = "OPTION_TODO:\tThe requested option has not been implemented yet"
