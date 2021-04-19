@@ -139,6 +139,9 @@ class ClientHandler:
         response_str = "Message broadcast!\n"
         return response_str
 
+    def _option_6_create_a_secure_channel(self):
+        return None
+
     def _option_todo(self):
         response_str = "OPTION_TODO:\tThe requested option has not been implemented yet"
         print(response_str)
