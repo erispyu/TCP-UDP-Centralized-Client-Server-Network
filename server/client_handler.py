@@ -19,6 +19,8 @@ class ClientHandler:
 
         self.broadcast_has_read = []
 
+        self.channel_id = None
+
     # TODO: implement the ClientHandler for this project.
 
     def process_client_info(self):
@@ -55,11 +57,16 @@ class ClientHandler:
                 self._option_4_send_a_direct_msg_via_udp(request)
             elif option == 5:
                 response_str = self._option_5_send_a_broadcast_message(request)
+            elif option == 6:
+                response_str = self._option_6_create_a_secure_channel(request)
             else:
                 response_str = self._option_todo()
             time.sleep(1)
             response_data = {"response": response_str}
             self.send(response_data)
+
+            if option == 6 or 7:
+                self._loop_in_channel()
         else:
             print("REQUEST:\tClient " + self.client_name + "(client id = " + str(self.client_id) + ") requests for an invalid option")
 
@@ -139,8 +146,30 @@ class ClientHandler:
         response_str = "Message broadcast!\n"
         return response_str
 
-    def _option_6_create_a_secure_channel(self):
-        return None
+    def _option_6_create_a_secure_channel(self, request):
+        self.channel_id = request["message"]
+
+        self.server.creat_a_channel(self.channel_id, self.client_id, self.client_name)
+        print("OPTION_6:\tChannel #" + self.channel_id + " created, admin is " + self.client_name)
+
+        response_str = "Private key received from server and channel " + self.channel_id + " was successfully created!\n" + \
+                       "\n" + \
+                       "----------------------- Channel " + self.channel_id + " ------------------------\n" + \
+                       "\n" + \
+                       "All the data in this channel is encrypted\n" + \
+                       "\n" + \
+                       "General Admin Guidelines:\n" + \
+                       "1. #" + self.client_name + " is the admin of this channel\n" + \
+                       "2. Type '#exit' to terminate the channel (only for admins)\n" + \
+                       "\n" + "\n" + \
+                       "General Chat Guidelines:\n" + "1. Type #bye to exit from this channel. (only for non-admins users)\n" + \
+                       "2. Use #<username> to send a private message to that user.\n" + "\n" + \
+                       "Waiting for other users to join....\n"
+        return response_str
+
+    def _loop_in_channel(self):
+        while True:
+            return
 
     def _option_todo(self):
         response_str = "OPTION_TODO:\tThe requested option has not been implemented yet"

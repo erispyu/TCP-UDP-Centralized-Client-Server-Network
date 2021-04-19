@@ -24,6 +24,7 @@ class Server(object):
         self.server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)  # your implementation for this socket here
         self.client_list = {}
         self.message_list = {}
+        self.channels = {}
 
     def _bind(self):
         """
@@ -94,6 +95,9 @@ class Server(object):
     def remove_from_message_list(self, timestamp):
         self.message_list.pop(timestamp)
         return
+
+    def creat_a_channel(self, channel_id, admin_id, admin_name):
+        self.channels[channel_id] = {"admin_id": admin_id, "admin_name": admin_name, "normal_users": []}
 
     def run(self):
         """
