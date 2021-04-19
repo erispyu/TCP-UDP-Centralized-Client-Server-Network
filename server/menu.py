@@ -88,7 +88,7 @@ class Menu:
                   "message": "Enter the message: "},
             "5": {"option": 5, "message": "Enter the message: "},
             "6": {"option": 6, "channel_id": "Enter the channel id: ", "channel": None},
-            "7": {"option": 7, "channel_id": "Enter channel id you'd like to join: "}
+            "7": {"option": 7, "channel_id": "Enter channel id you'd like to join: ", "channel": None}
         }
         return headers
 

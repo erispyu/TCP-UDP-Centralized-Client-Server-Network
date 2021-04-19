@@ -70,10 +70,16 @@ class ClientHandler:
                 response_str = self._option_6_create_a_secure_channel(request)
                 response_data = {"response": response_str}
                 self.send(response_data)
-
+                self._loop_in_channel()
+            elif option == 7:
+                response_str = self._option_7_join_an_existing_channel(request)
+                response_data = {"response": response_str}
+                self.send(response_data)
                 self._loop_in_channel()
             else:
                 response_str = self._option_todo()
+                response_data = {"response": response_str}
+                self.send(response_data)
         else:
             print("REQUEST:\tClient " + self.client_name + "(client id = " + str(self.client_id) + ") requests for an invalid option")
 
@@ -172,15 +178,52 @@ class ClientHandler:
                        "1. #" + self.client_name + " is the admin of this channel\n" + \
                        "2. Type '#exit' to terminate the channel (only for admins)\n" + \
                        "\n" + "\n" + \
-                       "General Chat Guidelines:\n" + "1. Type #bye to exit from this channel. (only for non-admins users)\n" + \
+                       "General Chat Guidelines:\n" + \
+                       "1. Type #bye to exit from this channel. (only for non-admins users)\n" + \
                        "2. Use #<username> to send a private message to that user.\n" + "\n" + \
                        "Waiting for other users to join....\n"
+        return response_str
+
+    def _option_7_join_an_existing_channel(self, request):
+        channel_id = request["channel_id"]
+        self.channel_info = self.server.get_channel_info(channel_id)
+        print("OPTION_7:\tGet channel info for Client " + self.client_name + "(client id = " + str(
+            self.client_id) + ")")
+
+        admin_name = self.channel_info["admin_name"]
+        normal_users = self.channel_info["normal_users"]
+        normal_users_str = ""
+        for user in normal_users:
+            normal_users_str = normal_users_str + user + " "
+
+        member_info_str = None
+        if len(normal_users) == 0:
+            member_info_str = "#" + admin_name + " is already on the channel.\n"
+        else:
+            member_info_str = normal_users_str + "#" + admin_name + " are already on the channel.\n"
+
+        self.server.add_user_to_channel(channel_id, self.client_name)
+        print("OPTION_7:\tAdd Client " + self.client_name + "(client id = " + str(
+            self.client_id) + ") to channel #" + channel_id)
+
+        response_str = "----------------------- Channel " + channel_id + " ------------------------\n" + \
+                       "\n" + \
+                       "All the data in this channel is encrypted\n" + \
+                       "\n" + \
+                       self.client_name + " just joined\n" + \
+                       member_info_str + \
+                       admin_name + " is the admin of this channel\n" + \
+                       "\n" + \
+                       "Chat Guidelines:\n" + \
+                       "1. Type #bye to exit from this channel. (only for non-admins users)\n" + \
+                       "2. Use #<username> to send a private message to that user.\n" + "\n" + \
+                       "\n"
         return response_str
 
     def _loop_in_channel(self):
         time.sleep(1)
         self.send({"channel_info": self.channel_info})
-        print("OPTION_6:\tSend channel info to Client " + self.client_name + "(client id = " + str(self.client_id) + ")")
+        print("OPTION_6|7:\tSend channel info to Client " + self.client_name + "(client id = " + str(self.client_id) + ")")
 
         has_read_list = []
 
