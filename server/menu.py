@@ -98,7 +98,12 @@ class Menu:
                                  "4. Compute the response time of a message when the user request it\n" +
                                  "5. Inform the user when it has been inactive on the channel for more than 5 minutes.\n" +
                                  "\n" +
-                                 "Enter an integer to enable a set of permissions: "}
+                                 "Enter an integer to enable a set of permissions: "},
+            "9": {"option": 9},
+            "10": {"option": 10},
+            "11": {"option": 11},
+            "12": {"option": 12},
+            "13": {"option": 13, "disconnect": None}
         }
         return headers
 

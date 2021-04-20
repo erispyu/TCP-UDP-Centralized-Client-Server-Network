@@ -42,6 +42,10 @@ class ClientHelper:
                     request[key] = input(request_header[key])
             self.client.send({"request": request})
 
+            if "disconnect" in request_header:
+                print("\nDisconnect from server!!!\n")
+                exit(1)
+
             if "udp" in request_header:
                 if self.udp_flag is False:
                     self.udp_socket.bind(self.parse_udp_address(request["sender_address"]))

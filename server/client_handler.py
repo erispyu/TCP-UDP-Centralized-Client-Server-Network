@@ -48,7 +48,7 @@ class ClientHandler:
         request = self.receive()["request"]
         option = request["option"]
         response_str = None
-        if 1 <= option <= 12:
+        if 1 <= option <= 13:
             print("REQUEST:\tClient " + self.client_name + "(client id = " + str(
                 self.client_id) + ") requests for option No." + str(option))
 
@@ -94,6 +94,20 @@ class ClientHandler:
                 response_str = self._option_8_create_a_bot(request)
                 response_data = {"response": response_str}
                 self.send(response_data)
+            elif option == 9:
+                response_str = self._option_9_map_the_network()
+                response_data = {"response": response_str}
+                self.send(response_data)
+            elif option == 10:
+                response_str = self._option_10_link_state()
+                response_data = {"response": response_str}
+                self.send(response_data)
+            elif option == 11:
+                response_str = self._option_11_distance_vector()
+                response_data = {"response": response_str}
+                self.send(response_data)
+            elif option == 13:
+                self._option_13_disconnect_from_server()
             else:
                 response_str = self._option_todo()
                 response_data = {"response": response_str}
@@ -350,9 +364,30 @@ class ClientHandler:
         m.update(str(self.client_id).encode())
         token = m.hexdigest()
         self.server.create_a_bot(token, bot_name, self.client_name, permissions)
-        print("OPTION_8:\tClient " + self.client_name + " create the bot " + bot_name)
+        print("OPTION_8:\tClient " + self.client_name + "(client id = " + str(self.client_id) + ") create the bot " + bot_name + " with permissions " + permissions)
         response_str = "\n" + bot_name + "'s Configuration:\nToken: " + token + "\nPermissions Enabled: " + permissions + "\nStatus: ready\n"
         return response_str
+
+    def _option_9_map_the_network(self):
+        response_str = "\nRouting table requested! Waiting for response....\n\nNetwork Map:\n\n"
+        client_list = self.server.get_client_list()
+        return response_str
+
+    def _option_10_link_state(self):
+        response_str = self._option_9_map_the_network()
+        response_str += "\nRouting table for " + self.client_name + " (id: " + str(self.client_id) + ") computed with Link State Protocol:\n"
+        return response_str
+
+    def _option_11_distance_vector(self):
+        response_str = self._option_9_map_the_network()
+        response_str += "\nRouting table computed with Distance Vector Protocol:\n"
+        return response_str
+
+    def _option_13_disconnect_from_server(self):
+        print("DISCONNECT:\tClient " + self.client_name + "(client id = " + str(self.client_id) + ") disconnected!")
+        # remove the client from the client list
+        self.server.remove_from_client_list(self.client_id)
+        exit(1)
 
     def _option_todo(self):
         response_str = "OPTION_TODO:\tThe requested option has not been implemented yet"
@@ -361,6 +396,7 @@ class ClientHandler:
 
     def send(self, data):
         data = pickle.dumps(data)
+        time.sleep(0.2)
         self.client_socket.send(data)
 
     def receive(self):
