@@ -99,6 +99,16 @@ class Server(object):
     def creat_a_channel(self, channel_id, admin_id, admin_name):
         self.channels[channel_id] = {"channel_id": channel_id, "admin_id": admin_id, "admin_name": admin_name, "normal_users": [], "msg_list": {}}
 
+    def terminate_a_channel(self, channel_id):
+        self.channels.pop(channel_id)
+        return
+
+    def remove_user_from_channel(self, channel_id, user_name):
+        channel = self.channels[channel_id]
+        normal_users = channel["normal_users"]
+        normal_users.pop(user_name)
+        return
+
     def get_channel_info(self, channel_id):
         return self.channels[channel_id]
 

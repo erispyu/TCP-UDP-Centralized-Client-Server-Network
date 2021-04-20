@@ -1,8 +1,10 @@
 import pickle
 import time
 from datetime import datetime
+from threading import Thread
 
 from menu import Menu
+
 
 class ClientHandler:
 
@@ -32,10 +34,12 @@ class ClientHandler:
         # add the client to the client list
         self.server.add_to_client_list(self.client_id, self.client_name)
 
-        print("CONNECT:\tClient " + self.client_name + "(client id = " + str(self.client_id) + ") has successfully connected to the server.")
+        print("CONNECT:\tClient " + self.client_name + "(client id = " + str(
+            self.client_id) + ") has successfully connected to the server.")
 
     def send_menu(self):
-        menu_data = {"menu_str": self.menu.get(self=self.menu), "request_headers": self.request_headers, "response_headers": self.response_headers}
+        menu_data = {"menu_str": self.menu.get(self=self.menu), "request_headers": self.request_headers,
+                     "response_headers": self.response_headers}
         self.send({"menu": menu_data})
         print("CACHE_MENU:\tSend menu to Client " + self.client_name + "(client id = " + str(self.client_id) + ")")
 
@@ -44,7 +48,8 @@ class ClientHandler:
         option = request["option"]
         response_str = None
         if 1 <= option <= 12:
-            print("REQUEST:\tClient " + self.client_name + "(client id = " + str(self.client_id) + ") requests for option No." + str(option))
+            print("REQUEST:\tClient " + self.client_name + "(client id = " + str(
+                self.client_id) + ") requests for option No." + str(option))
 
             if option == 1:
                 response_str = self._option_1_send_user_list()
@@ -89,7 +94,8 @@ class ClientHandler:
                 response_data = {"response": response_str}
                 self.send(response_data)
         else:
-            print("REQUEST:\tClient " + self.client_name + "(client id = " + str(self.client_id) + ") requests for an invalid option")
+            print("REQUEST:\tClient " + self.client_name + "(client id = " + str(
+                self.client_id) + ") requests for an invalid option")
 
     def _option_1_send_user_list(self):
         client_list = self.server.get_client_list()
@@ -114,7 +120,8 @@ class ClientHandler:
         curr_time_format = curr_time.strftime("%Y-%m-%d %H:%M")
         self.server.add_to_message_list(timestamp, curr_time_format, message, recipient, self.client_name, private=True)
         response_str = "Message sent!\n"
-        print("OPTION_2:\tSave the private message with timestamp " + str(timestamp) + " to server from Client " + self.client_name + "(client id = " + str(self.client_id) + ")")
+        print("OPTION_2:\tSave the private message with timestamp " + str(
+            timestamp) + " to server from Client " + self.client_name + "(client id = " + str(self.client_id) + ")")
         return response_str
 
     def _option_3_get_my_messages(self):
@@ -142,7 +149,8 @@ class ClientHandler:
                     self.client_id) + ")" + " has read private message with timestamp " + str(key))
 
         response_str = "Number of unread messages: " + str(len(reading_list)) + "\n" + response_str
-        print("OPTION_3:\tShow unread messages to Client " + self.client_name + "(client id = " + str(self.client_id) + ")")
+        print("OPTION_3:\tShow unread messages to Client " + self.client_name + "(client id = " + str(
+            self.client_id) + ")")
 
         for key in reading_list:
             self.server.remove_from_message_list(key)
@@ -150,7 +158,9 @@ class ClientHandler:
         return response_str
 
     def _option_4_send_a_direct_msg_via_udp(self, request):
-        print("OPTION_4\tClient " + self.client_name + "(client id = " + str(self.client_id) + ") sent a direct message to " + request["recipient_address"] + " from " + request["sender_address"])
+        print("OPTION_4\tClient " + self.client_name + "(client id = " + str(
+            self.client_id) + ") sent a direct message to " + request["recipient_address"] + " from " + request[
+                  "sender_address"])
         return None
 
     def _option_5_send_a_broadcast_message(self, request):
@@ -161,9 +171,11 @@ class ClientHandler:
             if client != self.client_id:
                 recipient = str(client)
                 timestamp = time.time()
-                self.server.add_to_message_list(timestamp, curr_time_format, message, recipient, self.client_name, private=False)
+                self.server.add_to_message_list(timestamp, curr_time_format, message, recipient, self.client_name,
+                                                private=False)
                 print("OPTION_5:\tSave the broadcast message with timestamp " + str(
-                    timestamp) + " to server from Client " + self.client_name + "(client id = " + str(self.client_id) + ")")
+                    timestamp) + " to server from Client " + self.client_name + "(client id = " + str(
+                    self.client_id) + ")")
         response_str = "Message broadcast!\n"
         return response_str
 
@@ -229,35 +241,94 @@ class ClientHandler:
         return response_str
 
     def _loop_in_channel(self):
+        channel_id = self.channel_info["channel_id"]
+        terminate = False
+        left = False
+        is_admin = False
+        if self.channel_info["admin_name"] == self.client_name:
+            is_admin = True
         has_read_list = []
-        while True:
+        # send_to_client_thread = Thread(target=self._channel_send_to_client)
+        # receive_from_client_thread = Thread(target=self._channel_receive_from_client, args=(terminate, left))
+        # send_to_client_thread.start()
+        # receive_from_client_thread.start()
+        while not terminate and not left:
             channel_msg_list = self.server.get_channel_msg_list(self.channel_info["channel_id"])
+            chat_msg_recv = ""
             for key in channel_msg_list:
                 if key not in has_read_list:
                     msg_data = channel_msg_list[key]
                     if msg_data["sender_name"] != self.client_name:
                         if msg_data["receiver_name"] == "channel_public" or msg_data["receiver_name"] == self.client_name:
-                            self.send({"chat_msg_recv": msg_data["message"]})
+                            chat_msg_recv += (msg_data["message"] + "\n")
+                            print("CHANNEL:\tSend message with timestamp=" + str(
+                                key) + " to Client " + self.client_name + "(client id = " + str(self.client_id) + ")")
                             has_read_list.append(key)
+            self.send({"chat_msg_recv": chat_msg_recv})
 
             new_msg = self.receive()["chat_msg_send"]
             sender_name = self.client_name
-            receiver_name = "channel_public";
-            # if len(new_msg) > 0 and new_msg[0] == '#':
-            #     if self.client_id == self.channel_info["admin_id"] and new_msg == "#exit":
-            #         return
-            #     elif self.client_id != self.channel_info["admin_id"] and new_msg == "#bye":
-            #         return
-            #     else:
-            #         receiver_name = new_msg.split()[0][1:]
-            #         new_msg = new_msg[len(receiver_name) + 2:]
+            receiver_name = "channel_public"
+            if len(new_msg) > 0 and new_msg[0] == '#':
+                if is_admin and new_msg == "#exit":
+                    self.send({"close_channel": "\nChannel " + channel_id + " closed by admin\n"})
+                    self.channel_info = {}
+                    self.server.terminate_a_channel(channel_id)
+                    print("CHANNEL:\tAdmin " + self.client_name + " terminate the channel #" + channel_id)
+                    return
+                elif not is_admin and new_msg == "#bye":
+                    self.send({"close_channel": self.client_name + " left the channel."})
+                    self.channel_info = {}
+                    self.server.remove_user_from_channel(channel_id, self.client_name)
+                    print("CHANNEL:\tClient " + self.client_name + " left the channel #" + channel_id)
+                    return
+                else:
+                    receiver_name = new_msg.split()[0][1:]
+                    new_msg = new_msg[len(receiver_name) + 2:]
 
-            # new_msg = sender_name + "> " + new_msg
+            new_msg = sender_name + "> " + new_msg
 
             timestamp = time.time()
             msg_data = {"sender_name": sender_name, "receiver_name": receiver_name, "message": new_msg}
-            self.server.add_msg_to_channel(self.channel_info["channel_id"], timestamp, msg_data)
-            print("OPTION_6|7:\tAdd message with timestamp=" + str(timestamp) + " to channel #" + self.channel_info["channel_id"])
+            self.server.add_msg_to_channel(channel_id, timestamp, msg_data)
+            print("CHANNEL:\tAdd message with timestamp=" + str(timestamp) + " to channel #" + channel_id)
+
+    # def _channel_send_to_client(self):
+    #     has_read_list = []
+    #     while True:
+    #         channel_msg_list = self.server.get_channel_msg_list(self.channel_info["channel_id"])
+    #         chat_msg_recv = ""
+    #         for key in channel_msg_list:
+    #             if key not in has_read_list:
+    #                 msg_data = channel_msg_list[key]
+    #                 if msg_data["sender_name"] != self.client_name:
+    #                     if msg_data["receiver_name"] == "channel_public" or msg_data["receiver_name"] == self.client_name:
+    #                         chat_msg_recv += (msg_data["message"] + "\n")
+    #                         print("CHANNEL:\tSend message with timestamp=" + str(key) + " to Client " + self.client_name + "(client id = " + str(self.client_id) + ")")
+    #                         has_read_list.append(key)
+    #         self.send({"chat_msg_recv": chat_msg_recv})
+    #
+    # def _channel_receive_from_client(self, terminate, left):
+    #     while True:
+    #         new_msg = self.receive()["chat_msg_send"]
+    #         sender_name = self.client_name
+    #         receiver_name = "channel_public"
+    #         # if len(new_msg) > 0 and new_msg[0] == '#':
+    #         #     if self.client_id == self.channel_info["admin_id"] and new_msg == "#exit":
+    #         #         return
+    #         #     elif self.client_id != self.channel_info["admin_id"] and new_msg == "#bye":
+    #         #         return
+    #         #     else:
+    #         #         receiver_name = new_msg.split()[0][1:]
+    #         #         new_msg = new_msg[len(receiver_name) + 2:]
+    #
+    #         # new_msg = sender_name + "> " + new_msg
+    #
+    #         timestamp = time.time()
+    #         msg_data = {"sender_name": sender_name, "receiver_name": receiver_name, "message": new_msg}
+    #         self.server.add_msg_to_channel(self.channel_info["channel_id"], timestamp, msg_data)
+    #         print("CHANNEL:\tAdd message with timestamp=" + str(timestamp) + " to channel #" + self.channel_info[
+    #             "channel_id"])
 
     def _option_todo(self):
         response_str = "OPTION_TODO:\tThe requested option has not been implemented yet"

@@ -57,33 +57,37 @@ class ClientHelper:
 
             if "channel" in request_header:
                 channel_info = self.get_channel_info()
-                channel_id = channel_info["channel_id"]
-                admin_id = channel_info["admin_id"]
-                recv_thread = Thread(target=self.print_chat_msg_recv)
-                send_thread = Thread(target=self.send_chat_msg)
-                recv_thread.start()
-                send_thread.start()
                 while True:
-                    data = self.client.receive()
+                    recv_data = self.client.receive()
+                    if "chat_msg_recv" in recv_data:
+                        chat_msg_recv = recv_data["chat_msg_recv"]
+                        print(chat_msg_recv + "\n")
+                        chat_msg = input(self.client.client_name + "> ")
+                        if chat_msg and len(chat_msg) > 0:
+                            self.client.send({"chat_msg_send": chat_msg})
+
+                    if "close_channel" in recv_data:
+                        print(recv_data["close_channel"])
+                        return
         else:
             print("ERROR: Invalid option typed in!!!\n")
         return
 
-    def print_chat_msg_recv(self):
-        while True:
-            chat_msg_recv = self.client.receive()["chat_msg_recv"]
-            print(chat_msg_recv + "\n")
-
-    def send_chat_msg(self):
-        while True:
-            while sys.stdin in select.select([sys.stdin], [], [], 0)[0]:
-                line = sys.stdin.readline()
-                if line:
-                    self.client.send({"chat_msg_send": line})
-        # while True:
-        #     chat_msg = input(self.client.client_name + "> ")
-        #     if chat_msg is not None and len(chat_msg) > 0:
-        #         self.client.send({"chat_msg_send": chat_msg})
+    # def print_chat_msg_recv(self):
+    #     while True:
+    #         chat_msg_recv = self.client.receive()["chat_msg_recv"]
+    #         print(chat_msg_recv + "\n")
+    #
+    # def send_chat_msg(self):
+    #     while True:
+    #         while sys.stdin in select.select([sys.stdin], [], [], 0)[0]:
+    #             line = sys.stdin.readline()
+    #             if line and len(line) > 0:
+    #                 self.client.send({"chat_msg_send": line})
+    #     # while True:
+    #     #     chat_msg = input(self.client.client_name + "> ")
+    #     #     if chat_msg is not None and len(chat_msg) > 0:
+    #     #         self.client.send({"chat_msg_send": chat_msg})
 
     def udp_recv(self):
         while True:
