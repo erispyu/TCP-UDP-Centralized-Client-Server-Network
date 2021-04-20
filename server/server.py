@@ -3,6 +3,7 @@ import socket
 import pickle
 from threading import Thread
 from client_handler import ClientHandler
+import hashlib
 
 
 class Server(object):
@@ -25,6 +26,8 @@ class Server(object):
         self.client_list = {}
         self.message_list = {}
         self.channels = {}
+
+        self.bots = {}
 
     def _bind(self):
         """
@@ -136,6 +139,8 @@ class Server(object):
         self._listen()
         self._accept_clients()
 
+    def create_a_bot(self, token, bot_name, client_id, permissions):
+        self.bots[token] = {"bot_name": bot_name, "client_id": client_id, "permissions": permissions}
 
 # main execution
 if __name__ == '__main__':

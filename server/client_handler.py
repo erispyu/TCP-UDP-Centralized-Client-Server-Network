@@ -2,6 +2,7 @@ import pickle
 import time
 from datetime import datetime
 from threading import Thread
+import hashlib
 
 from menu import Menu
 
@@ -89,6 +90,10 @@ class ClientHandler:
                 print("OPTION_7:\tSend channel info to Client " + self.client_name + "(client id = " + str(
                     self.client_id) + ")")
                 self._loop_in_channel()
+            elif option == 8:
+                response_str = self._option_8_create_a_bot(request)
+                response_data = {"response": response_str}
+                self.send(response_data)
             else:
                 response_str = self._option_todo()
                 response_data = {"response": response_str}
@@ -336,6 +341,18 @@ class ClientHandler:
     #         self.server.add_msg_to_channel(self.channel_info["channel_id"], timestamp, msg_data)
     #         print("CHANNEL:\tAdd message with timestamp=" + str(timestamp) + " to channel #" + self.channel_info[
     #             "channel_id"])
+
+    def _option_8_create_a_bot(self, request):
+        bot_name = request["bot_name"]
+        permissions = request["permissions"]
+        m = hashlib.md5()
+        m.update(bot_name.encode())
+        m.update(str(self.client_id).encode())
+        token = m.hexdigest()
+        self.server.create_a_bot(token, bot_name, self.client_name, permissions)
+        print("OPTION_8:\tClient " + self.client_name + " create the bot " + bot_name)
+        response_str = "\n" + bot_name + "'s Configuration:\nToken: " + token + "\nPermissions Enabled: " + permissions + "\nStatus: ready\n"
+        return response_str
 
     def _option_todo(self):
         response_str = "OPTION_TODO:\tThe requested option has not been implemented yet"

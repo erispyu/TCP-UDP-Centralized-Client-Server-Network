@@ -88,7 +88,17 @@ class Menu:
                   "message": "Enter the message: "},
             "5": {"option": 5, "message": "Enter the message: "},
             "6": {"option": 6, "channel_id": "Enter the channel id: ", "channel": None},
-            "7": {"option": 7, "channel_id": "Enter channel id you'd like to join: ", "channel": None}
+            "7": {"option": 7, "channel_id": "Enter channel id you'd like to join: ", "channel": None},
+            "8": {"option": 8,
+                  "bot_name": "Enter the name of your bot: ",
+                  "permissions": "\nThe disabled permissions for this bot are:\n" +
+                                 "1. Welcome users right after they join a channel.\n" +
+                                 "2. Show a warning to the users when they send words that are not allowed\n" +
+                                 "3. Drop users from the channel after 3 warnings\n" +
+                                 "4. Compute the response time of a message when the user request it\n" +
+                                 "5. Inform the user when it has been inactive on the channel for more than 5 minutes.\n" +
+                                 "\n" +
+                                 "Enter an integer to enable a set of permissions: "}
         }
         return headers
 
@@ -101,7 +111,8 @@ class Menu:
         """
         headers = {
             "1": {"option": 1, "response_str": None},
-            "4": {"option": 1, "sender_address": "UDP client running and accepting other clients at udp address ", "recipient_address": "Message sent to udp address: "}
+            "4": {"option": 1, "sender_address": "UDP client running and accepting other clients at udp address ",
+                  "recipient_address": "Message sent to udp address: "}
         }
         return headers
 
