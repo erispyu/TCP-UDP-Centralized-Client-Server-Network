@@ -1,0 +1,12 @@
+README
+1. name=, student id =,
+2. Description:
+This is a Computer Network assignment implemented in Python, basically a client-server model of network. Clients can communicate with the server or other clients, in messages or channels. The server also provide some protocols for security and path-finding.
+3. External Python modules： in requirements.txt
+4. Python version: 3.8.5
+5. attached screen-shots
+6. Challenges: 
+1. How to get the information of the menu on the client side. I tried to put the request instructions into the request_headers, which would also be cached to the Client side when a connection was set.
+2. How to print the messages in order. Cause I am not that familiar with Python dictionary, it takes a bit of time.
+3. Create the UDP socket on the client side to receive direct message. Using multi-threading to receive messages.
+4. In the channel implementation, it is hard to sync the messages to all the members. I have use a infinite-loop to keep sending messages to the clients, until the channel is terminated or the client is left.

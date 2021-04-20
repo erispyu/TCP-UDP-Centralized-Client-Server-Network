@@ -3,6 +3,7 @@ import time
 from datetime import datetime
 from threading import Thread
 import hashlib
+import random
 
 from menu import Menu
 
@@ -371,6 +372,31 @@ class ClientHandler:
     def _option_9_map_the_network(self):
         response_str = "\nRouting table requested! Waiting for response....\n\nNetwork Map:\n\n"
         client_list = self.server.get_client_list()
+        num_clients = len(client_list)
+
+        clients = []
+        for key in client_list:
+            clients.append(client_list[key])
+
+        map_info = [[-100 for col in range(num_clients)] for row in range(num_clients)]
+        for col in range(num_clients):
+            for row in range(num_clients):
+                if col == row:
+                    map_info[row][col] = 0
+                elif map_info[col][row] != -100:
+                    map_info[row][col] = map_info[col][row]
+                else:
+                    path_val = random.randint(-1, 10)
+                    if path_val == -1:
+                        map_info[row][col] = '-'
+                    else:
+                        map_info[row][col] = path_val
+
+        row_format = "{:>15}" * (len(clients) + 1)
+        response_str += (row_format.format("", *clients) + "\n")
+        for client, row in zip(clients, map_info):
+            response_str += (row_format.format(client, *row) + "\n")
+
         return response_str
 
     def _option_10_link_state(self):
