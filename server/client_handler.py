@@ -371,12 +371,22 @@ class ClientHandler:
 
     def _option_9_map_the_network(self):
         response_str = "\nRouting table requested! Waiting for response....\n\nNetwork Map:\n\n"
+
+        clients, map_info = self.generate_random_map_info()
+        print("OPTION_9:\tGenerate random map info for Client " + self.client_name + "(client id = " + str(self.client_id) + "):")
+
+        response_str += self.get_map_str(clients, map_info)
+
+        return response_str
+
+    def generate_random_map_info(self):
         client_list = self.server.get_client_list()
         num_clients = len(client_list)
 
-        clients = []
+        clients = [self.client_name]
         for key in client_list:
-            clients.append(client_list[key])
+            if key != self.client_id:
+                clients.append(client_list[key])
 
         map_info = [[-100 for col in range(num_clients)] for row in range(num_clients)]
         for col in range(num_clients):
@@ -386,23 +396,89 @@ class ClientHandler:
                 elif map_info[col][row] != -100:
                     map_info[row][col] = map_info[col][row]
                 else:
-                    path_val = random.randint(-1, 10)
-                    if path_val == -1:
+                    path_val = random.randint(1, 11)
+                    if path_val == 11:
                         map_info[row][col] = '-'
                     else:
                         map_info[row][col] = path_val
+        return clients, map_info
 
-        row_format = "{:>15}" * (len(clients) + 1)
-        response_str += (row_format.format("", *clients) + "\n")
+    def get_map_str(self, clients, map_info):
+        map_str = ""
+        row_format = "{:>10}" * (len(clients) + 1)
+        map_str += (row_format.format("", *clients) + "\n")
         for client, row in zip(clients, map_info):
-            response_str += (row_format.format(client, *row) + "\n")
-
-        return response_str
+            map_str += (row_format.format(client, *row) + "\n")
+        return map_str
 
     def _option_10_link_state(self):
-        response_str = self._option_9_map_the_network()
-        response_str += "\nRouting table for " + self.client_name + " (id: " + str(self.client_id) + ") computed with Link State Protocol:\n"
+        response_str = "\nRouting table requested! Waiting for response....\n\nNetwork Map:\n\n"
+
+        clients, map_info = self.generate_random_map_info()
+        print("OPTION_10:\tGenerate random map info for Client " + self.client_name + "(client id = " + str(
+            self.client_id) + "):")
+
+        response_str += self.get_map_str(clients, map_info)
+
+        response_str += "\nRouting table for " + self.client_name + " (id: " + str(self.client_id) + ") computed with Link State Protocol:\n\n"
+
+        response_str += self.link_state_alg(clients, map_info)
+
         return response_str
+
+    def link_state_alg(self, clients, map_info):
+        result_table = [["Destination", "Path", "Cost"]]
+
+        min_cost_dist = self.dijkstra(map_info)
+        print("OPTION_10:\tApply link-state alg for Client " + self.client_name + "(client id = " + str(self.client_id) + "):")
+        min_cost_dist.pop(0)
+
+        for key in min_cost_dist:
+            path = min_cost_dist[key]["path"]
+            path_str = "{"
+            for i in range(len(path)):
+                path_str += clients[path[i]]
+                if i < len(path) - 1:
+                    path_str += ", "
+            path_str += "}"
+            cost = min_cost_dist[key]["cost"]
+            result_table.append([clients[key], path_str, cost])
+
+        table_str = ""
+        for line in result_table:
+            table_str += ("{:<15} {:<25} {:<10}".format(line[0], line[1], line[2]) + "\n")
+        return table_str
+
+    def dijkstra(self, map_info):
+        v_size = len(map_info)
+        min_cost_dist = {}
+        for i in range(v_size):
+            min_cost_dist[i] = {"cost": 10000, "path": []}
+        min_cost_dist[0]["cost"] = 0
+        visited_set = [False] * v_size
+
+        for i in range(v_size):
+            u = self.min_distance(v_size, min_cost_dist, visited_set)
+            visited_set[u] = True
+            for v in range(v_size):
+                if map_info[u][v] != '-' and map_info[u][v] > 0 and visited_set[v] is False and min_cost_dist[v][
+                    "cost"] > min_cost_dist[u]["cost"] + map_info[u][v]:
+                    min_cost_dist[v]["cost"] = min_cost_dist[u]["cost"] + map_info[u][v]
+                    min_cost_dist[v]["path"].append(u)
+
+        for v in range(v_size):
+            min_cost_dist[v]["path"].append(v)
+
+        return min_cost_dist
+
+    def min_distance(self, v_size, min_cost_dist, visited_set):
+        min = 10000
+
+        for vertex in range(v_size):
+            if min_cost_dist[vertex]["cost"] < min and visited_set[vertex] is False:
+                min = min_cost_dist[vertex]["cost"]
+                min_index = vertex
+        return min_index
 
     def _option_11_distance_vector(self):
         response_str = self._option_9_map_the_network()
