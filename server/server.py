@@ -106,7 +106,7 @@ class Server(object):
     def remove_user_from_channel(self, channel_id, user_name):
         channel = self.channels[channel_id]
         normal_users = channel["normal_users"]
-        normal_users.pop(user_name)
+        normal_users.remove(user_name)
         return
 
     def get_channel_info(self, channel_id):

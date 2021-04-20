@@ -242,8 +242,11 @@ class ClientHandler:
 
     def _loop_in_channel(self):
         channel_id = self.channel_info["channel_id"]
-        terminate = False
-        left = False
+        exit_data = {"close_channel": "\nChannel " + channel_id + " closed by admin\n"}
+        if channel_id not in self.server.channels:
+            self.send(exit_data)
+            self.channel_info = {}
+            return
         is_admin = False
         if self.channel_info["admin_name"] == self.client_name:
             is_admin = True
@@ -252,7 +255,7 @@ class ClientHandler:
         # receive_from_client_thread = Thread(target=self._channel_receive_from_client, args=(terminate, left))
         # send_to_client_thread.start()
         # receive_from_client_thread.start()
-        while not terminate and not left:
+        while True:
             channel_msg_list = self.server.get_channel_msg_list(self.channel_info["channel_id"])
             chat_msg_recv = ""
             for key in channel_msg_list:
@@ -271,13 +274,17 @@ class ClientHandler:
             receiver_name = "channel_public"
             if len(new_msg) > 0 and new_msg[0] == '#':
                 if is_admin and new_msg == "#exit":
-                    self.send({"close_channel": "\nChannel " + channel_id + " closed by admin\n"})
+                    self.send(exit_data)
                     self.channel_info = {}
                     self.server.terminate_a_channel(channel_id)
                     print("CHANNEL:\tAdmin " + self.client_name + " terminate the channel #" + channel_id)
                     return
                 elif not is_admin and new_msg == "#bye":
-                    self.send({"close_channel": self.client_name + " left the channel."})
+                    left_msg = self.client_name + " left the channel."
+                    timestamp = time.time()
+                    msg_data = {"sender_name": sender_name, "receiver_name": receiver_name, "message": left_msg}
+                    self.server.add_msg_to_channel(channel_id, timestamp, msg_data)
+                    self.send({"close_channel": left_msg})
                     self.channel_info = {}
                     self.server.remove_user_from_channel(channel_id, self.client_name)
                     print("CHANNEL:\tClient " + self.client_name + " left the channel #" + channel_id)
