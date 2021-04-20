@@ -481,9 +481,29 @@ class ClientHandler:
         return min_index
 
     def _option_11_distance_vector(self):
-        response_str = self._option_9_map_the_network()
-        response_str += "\nRouting table computed with Distance Vector Protocol:\n"
+        response_str = "\nRouting table requested! Waiting for response....\n\nNetwork Map:\n\n"
+
+        clients, map_info = self.generate_random_map_info()
+        print("OPTION_11:\tGenerate random map info for Client " + self.client_name + "(client id = " + str(
+            self.client_id) + "):")
+
+        response_str += self.get_map_str(clients, map_info)
+
+        response_str += "\nRouting table computed with Distance Vector Protocol:\n\n"
+        response_str += self.distance_vector(clients, map_info)
         return response_str
+
+    def distance_vector(self, clients, map_info):
+        min_cost_dist = self.dijkstra(map_info)
+        print("OPTION_11:\tApply distance-vector alg for Client " + self.client_name + "(client id = " + str(
+            self.client_id) + "):")
+        min_cost_dist.pop(0)
+
+        for key in min_cost_dist:
+            map_info[0][key] = min_cost_dist[key]["cost"]
+            map_info[key][0] = min_cost_dist[key]["cost"]
+
+        return self.get_map_str(clients, map_info)
 
     def _option_13_disconnect_from_server(self):
         print("DISCONNECT:\tClient " + self.client_name + "(client id = " + str(self.client_id) + ") disconnected!")
